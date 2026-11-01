@@ -17,24 +17,24 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Instalace nastroju a Buildozeru
+      - name: Instalace Buildozeru
         run: |
           pip install --upgrade pip
           pip install buildozer cython keyrings.alt kivy
           sudo apt-get update
-          sudo apt-get install -y ccache git libffi-dev libssl-dev soccer build-essential ffmpeg libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev libportmidi-dev libswscale-dev libavformat-dev libavcodec-dev zlib1g-dev
+          sudo apt-get install -y ccache git libffi-dev libssl-dev build-essential ffmpeg libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev libportmidi-dev libswscale-dev libavformat-dev libavcodec-dev zlib1g-dev
 
-      - name: Vygenerovani a uprava buildozer.spec
+      - name: Priprava specifikace
         run: |
           buildozer init
           sed -i 's/^requirements = python3, kivy/requirements = python3, kivy, sqlite3/' buildozer.spec
           sed -i 's/^#android.accept_sdk_license = False/android.accept_sdk_license = True/' buildozer.spec
 
-      - name: Sestaveni APK aplikace
+      - name: Baleni do APK
         run: |
           yes | buildozer -v android debug
 
-      - name: Ulozeni hotoveho APK
+      - name: Odeslani hotoveho APK k vam
         uses: actions/upload-artifact@v3
         with:
           name: fleet-servis-aplikace
