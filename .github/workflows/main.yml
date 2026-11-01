@@ -1,24 +1,41 @@
-name: Build Android APK
+name: Vytvorit APK pro Android
 on: [push, workflow_dispatch]
 jobs:
   build:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
-      - name: Setup Python
+
+      - name: Nastaveni Javy
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Nastaveni Pythonu
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
-      - name: Install Buildozer and Dependencies
+
+      - name: Instalace nastroju a Buildozeru
         run: |
-          pip install buildozer cython
-          sudo apt-get install -y libsqlite3-dev openjdk-17-jdk-headless
+          pip install --upgrade pip
+          pip install buildozer cython keyrings.alt kivy
+          sudo apt-get update
+          sudo apt-get install -y ccache git libffi-dev libssl-dev soccer build-essential ffmpeg libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev libportmidi-dev libswscale-dev libavformat-dev libavcodec-dev zlib1g-dev
+
+      - name: Vygenerovani a uprava buildozer.spec
+        run: |
           buildozer init
-          sed -i 's/requirements = python3, kivy/requirements = python3, kivy, sqlite3/g' buildozer.spec
-      - name: Build with Buildozer
-        run: buildozer -v android debug
-      - name: Upload APK
+          sed -i 's/^requirements = python3, kivy/requirements = python3, kivy, sqlite3/' buildozer.spec
+          sed -i 's/^#android.accept_sdk_license = False/android.accept_sdk_license = True/' buildozer.spec
+
+      - name: Sestaveni APK aplikace
+        run: |
+          yes | buildozer -v android debug
+
+      - name: Ulozeni hotoveho APK
         uses: actions/upload-artifact@v3
         with:
-          name: fleet-app-apk
+          name: fleet-servis-aplikace
           path: bin/*.apk
